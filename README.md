@@ -5,7 +5,7 @@ Python library for controlling keyboard and mouse through Arduino in HID (Human 
 
 ## Installation
 ```bash
-pip install pyserial pyautogui
+pip install arduino-hid-controller
 ```
 
 ## Quick Start
