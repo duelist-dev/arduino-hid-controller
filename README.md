@@ -51,6 +51,7 @@ hid.keyboard.start()
 hid.keyboard.write("Hello World!")
 
 # Mouse examples (admin may be required for absolute positioning)
+hid.mouse.start()
 hid.mouse.move_absolute(500, 300)  # Requires admin
 hid.mouse.click(MOUSE_LEFT)        # Doesn't require admin
 
