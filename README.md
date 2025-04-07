@@ -10,7 +10,7 @@ pip install arduino-hid-controller
 
 ## Quick Start
 ```python
-from arduino-hid-controller import HIDController, KEY_LEFT_CTRL, MOUSE_LEFT
+from arduino_hid_controller import HIDController, KEY_LEFT_CTRL, MOUSE_LEFT
 
 hid = HIDController()  # Auto-connects to Arduino
 
