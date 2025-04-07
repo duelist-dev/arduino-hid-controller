@@ -3,27 +3,58 @@
 ## Description
 Python library for controlling keyboard and mouse through Arduino in HID (Human Interface Device) mode. Provides complete control over input device emulation.
 
-## Installation
+## Prerequisites
+
+### 1. Upload Arduino Sketch
+Before using this library, you must upload the HID controller sketch to your Arduino:
+
+1. Download the sketch file:
+   - [arduino-hid.ino](https://github.com/duelist-dev/arduino-hid-controller/blob/main/sketches/adruino-hid.ino)
+
+2. Open the sketch in Arduino IDE
+
+3. Select your board type:
+   - Tools → Board → "Arduino Leonardo" (or "Arduino Micro")
+
+4. Select the correct port:
+   - Tools → Port → (select your Arduino's port)
+
+5. Upload the sketch:
+   - Click the "Upload" button or press Ctrl+U
+
+
+### 2. Install Python Package
 ```bash
 pip install arduino-hid-controller
+```
+
+### 3. Administrator Privileges
+Some mouse functions (particularly absolute positioning) require administrator privileges:
+
+- **Windows**: Right-click → "Run as Administrator"
+- **Linux/Mac**: Use `sudo` (note: this may require GUI permissions)
+
+```bash
+# Linux/Mac example
+sudo python your_script.py
 ```
 
 ## Quick Start
 ```python
 from arduino_hid_controller import HIDController, KEY_LEFT_CTRL, MOUSE_LEFT
 
-hid = HIDController()  # Auto-connects to Arduino
+# Auto-connects to Arduino (make sure sketch is uploaded)
+hid = HIDController()
 
-# Keyboard control
+# Keyboard examples (no admin required)
 hid.keyboard.start()
-hid.keyboard.press('A')
-hid.keyboard.write("Hello")
+hid.keyboard.write("Hello World!")
 
-# Mouse control
-hid.mouse.start()
-hid.mouse.move_absolute(500, 300)
-hid.mouse.click(MOUSE_LEFT)
+# Mouse examples (admin may be required for absolute positioning)
+hid.mouse.move_absolute(500, 300)  # Requires admin
+hid.mouse.click(MOUSE_LEFT)        # Doesn't require admin
 
+# Cleanup
 hid.keyboard.stop()
 hid.mouse.stop()
 ```
@@ -203,6 +234,35 @@ All methods return `True` on success or `False` on failure. Possible exceptions:
 - Hardware:
   - Arduino Leonardo/Micro
   - HID controller firmware
+
+## Function-Specific Requirements
+
+| Function | Requires Admin | Notes |
+|----------|---------------|-------|
+| `move_absolute()` | Yes | Needs screen access |
+| `get_position()` | Yes | Needs screen access |
+| `move_relative()` | No | - |
+| All keyboard functions | No | - |
+
+## Troubleshooting
+
+### Permission Errors
+If you get errors about screen access:
+1. On Windows, run as Administrator
+2. On Linux/Mac:
+   ```bash
+   sudo python your_script.py
+   ```
+   or configure permanent permissions:
+   ```bash
+   sudo usermod -a -G input $USER  # For mouse access
+   sudo reboot
+   ```
+   
+### Arduino Not Detected
+1. Verify the sketch uploaded successfully
+2. Check your USB cable (some cables are power-only)
+3. Ensure you selected the correct board type in Arduino IDE
 
 ## License
 MIT License
