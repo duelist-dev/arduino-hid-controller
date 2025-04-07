@@ -72,14 +72,15 @@ Main facade class for device control.
 ### KeyboardController Class
 
 #### Core Methods
-| Method | Parameters | Returns | Description |
-|--------|------------|---------|-------------|
-| `start()` | - | bool | Initialize keyboard |
-| `stop()` | - | bool | Stop emulation |
-| `press(key)` | key: str/int | bool | Press key |
-| `release(key)` | key: str/int | bool | Release key |
-| `press_and_release(key, delay=0.05)` | key: str/int, delay: float | bool | Press and release |
-| `release_all()` | - | bool | Release all keys |
+| Method                               | Parameters | Returns | Description                |
+|--------------------------------------|------------|---------|----------------------------|
+| `start()`                            | - | bool | Initialize keyboard        |
+| `stop()`                             | - | bool | Stop emulation             |
+| `is_started()`                       | - | bool | Check is started emulation |
+| `press(key)`                         | key: str/int | bool | Press key                  |
+| `release(key)`                       | key: str/int | bool | Release key                |
+| `press_and_release(key, delay=0.05)` | key: str/int, delay: float | bool | Press and release          |
+| `release_all()`                      | - | bool | Release all keys           |
 
 #### Special Methods
 | Method | Parameters | Description |
@@ -90,13 +91,14 @@ Main facade class for device control.
 ### MouseController Class
 
 #### Core Methods
-| Method | Parameters | Description |
-|--------|------------|-------------|
-| `start()` | - | Initialize mouse |
-| `stop()` | - | Stop emulation |
-| `press(button)` | button: str | Press mouse button |
+| Method            | Parameters | Description |
+|-------------------|------------|-------------|
+| `start()`         | - | Initialize mouse |
+| `stop()`          | - | Stop emulation |
+| `is_started()`    | - | bool | Check is started emulation |
+| `press(button)`   | button: str | Press mouse button |
 | `release(button)` | button: str | Release mouse button |
-| `click(button)` | button: str | Click mouse button |
+| `click(button)`   | button: str | Click mouse button |
 
 #### Movement Methods
 | Method | Parameters | Description |
