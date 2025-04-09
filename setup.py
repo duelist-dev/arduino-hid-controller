@@ -8,7 +8,7 @@ with codecs.open(os.path.join(here, "README.md"), encoding="utf-8") as fh:
     long_description = "\n" + fh.read()
 
 setup(
-    name="arduino-hid-controller",
+    name="arduino_hid_controller",
     version='{{VERSION_PLACEHOLDER}}',
     author="Duelist",
     author_email="duelist.dev@gmail.com",
