@@ -78,9 +78,9 @@ class ArduinoController:
             self.__logger.warning("Попытка отправить команду без соединения")
             return False
 
-        command = f"{device}|{action}"
+        command = f"{device}|{action}|"
         if args:
-            command += "|" + "|".join(str(arg) for arg in args)
+            command += "|".join(str(arg) for arg in args)
 
         try:
             self.__serial.write(f"{command}\n".encode())

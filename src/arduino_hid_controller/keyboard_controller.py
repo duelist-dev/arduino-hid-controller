@@ -6,22 +6,21 @@ from .arduino_controller import ArduinoController
 
 class KeyboardController(ArduinoController):
     """Класс для эмуляции клавиатуры через Arduino"""
-
-    def __init__(self):
-        super().__init__()
+    def __init__(self, arduino: ArduinoController):
+        self._arduino = arduino
         self.__logger = logging.getLogger(__name__)
         self.__is_started = False
 
     def start(self) -> bool:
         """Начать эмуляцию клавиатуры"""
-        result = self._send_command("keyboard", "start")
+        result = self._arduino._send_command("keyboard", "start")
         if result:
             self.__is_started = True
         return result
 
     def stop(self) -> bool:
         """Остановить эмуляцию клавиатуры"""
-        result = self._send_command("keyboard", "stop")
+        result = self._arduino._send_command("keyboard", "stop")
         if result:
             self.__is_started = False
         return result
@@ -44,7 +43,7 @@ class KeyboardController(ArduinoController):
         key_str = hex(key) if isinstance(key, int) else key
         if not key_str:
             self.__logger.error("Не указана клавиша для нажатия")
-        return self._send_command("keyboard", "press", key_str)
+        return self._arduino._send_command("keyboard", "press", key_str)
 
     def release(self, key: Union[str, int]) -> bool:
         """
@@ -61,7 +60,7 @@ class KeyboardController(ArduinoController):
         if not key_str:
             self.__logger.error("Не указана клавиша для отпускания")
             return False
-        return self._send_command("keyboard", "release", key_str)
+        return self._arduino._send_command("keyboard", "release", key_str)
 
     def press_and_release(self, key: Union[str, int], delay: float = 0.05) -> bool:
         """
@@ -121,7 +120,7 @@ class KeyboardController(ArduinoController):
         if not self.__is_started:
             self.__logger.warning("Попытка отпустить все клавиши при неактивной эмуляции")
             return False
-        return self._send_command("keyboard", "release_all")
+        return self._arduino._send_command("keyboard", "release_all")
 
     def write(self, text: str) -> bool:
         """
@@ -137,4 +136,4 @@ class KeyboardController(ArduinoController):
         if not text:
             self.__logger.warning("Попытка отправить пустой текст")
             return False
-        return self._send_command("keyboard", "print", text)
+        return self._arduino._send_command("keyboard", "print", text)

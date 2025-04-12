@@ -8,8 +8,8 @@ from .arduino_controller import ArduinoController
 class MouseController(ArduinoController):
     """Класс для эмуляции мыши через Arduino"""
 
-    def __init__(self):
-        super().__init__()
+    def __init__(self, arduino: ArduinoController):
+        self._arduino = arduino
         self.__logger = logging.getLogger(__name__)
         self.__current_x = None
         self.__current_y = None
@@ -38,14 +38,14 @@ class MouseController(ArduinoController):
 
     def start(self) -> bool:
         """Начать эмуляцию мыши"""
-        result = self._send_command("mouse", "start")
+        result = self._arduino._send_command("mouse", "start")
         if result:
             self.__is_started = True
         return result
 
     def stop(self) -> bool:
         """Остановить эмуляцию мыши"""
-        result = self._send_command("mouse", "stop")
+        result = self._arduino._send_command("mouse", "stop")
         if result:
             self.__is_started = False
         return result
@@ -70,7 +70,7 @@ class MouseController(ArduinoController):
             self.__logger.error("Не указана кнопка мыши")
             return False
 
-        return self._send_command("mouse", "press", button_str)
+        return self._arduino._send_command("mouse", "press", button_str)
 
     def release(self, button: Union[str, int]) -> bool:
         """
@@ -88,7 +88,7 @@ class MouseController(ArduinoController):
             self.__logger.error("Не указана кнопка мыши")
             return False
 
-        return self._send_command("mouse", "release", button_str)
+        return self._arduino._send_command("mouse", "release", button_str)
 
     def click(self, button: Union[str, int]) -> bool:
         """
@@ -98,54 +98,85 @@ class MouseController(ArduinoController):
             button: Может быть 'left', 'right', 'middle' или код кнопки
         """
         button_str = hex(button) if isinstance(button, int) else button
-        return self._send_command("mouse", "click", button_str)
+        return self._arduino._send_command("mouse", "click", button_str)
 
+    #TODO: Работает не корректно
     def move_absolute(self, target_x: int, target_y: int, duration: float = 1.0) -> bool:
         """
-        Плавное перемещение курсора в указанные координаты за заданное время
-
-        Аргументы:
-            target_x: Конечная координата X (0 - левый край экрана)
-            target_y: Конечная координата Y (0 - верхний край экрана)
-            duration: Время перемещения в секундах (минимум 0.01)
-
-        Возвращает:
-            bool: True если перемещение успешно, False в случае ошибки
+        Усовершенствованное перемещение с коррекцией координат и проверкой отклонений.
+        Возвращает True при успешном перемещении, False при ошибке.
         """
-        # Проверка и корректировка координат
         if not self.__is_started:
             self.__logger.warning("Попытка перемещения при неактивной эмуляции")
             return False
 
         if duration <= 0:
-            self.__logger.error("Длительность должна быть положительной")
+            self.__logger.error("Некорректная длительность перемещения")
             return False
 
+        # Получаем и корректируем координаты
         self.__set_positions()
-        target_x = max(0, min(target_x, self.__screen_width - 1))
-        target_y = max(0, min(target_y, self.__screen_height - 1))
+        target_x = max(0, min(int(target_x), self.__screen_width - 1))
+        target_y = max(0, min(int(target_y), self.__screen_height - 1))
 
-        if target_x == self.__current_x and target_y == self.__current_y:
+        # Проверяем необходимость перемещения
+        if (target_x, target_y) == (self.__current_x, self.__current_y):
             return True
 
-        steps = max(1, int(min(duration, 300.0) * 60))
-        step_delay = duration / steps
-        step_x = (target_x - self.__current_x) / steps
-        step_y = (target_y - self.__current_y) / steps
+        # Рассчитываем общее перемещение
+        total_x = target_x - self.__current_x
+        total_y = target_y - self.__current_y
 
-        for i in range(steps):
-            new_x = int(self.__current_x + step_x * (i + 1))
-            new_y = int(self.__current_y + step_y * (i + 1))
-            rel_x = new_x - self.__current_x
-            rel_y = new_y - self.__current_y
+        # Оптимальные параметры перемещения
+        steps = max(1, min(int(duration * 60), 300))  # 60 шагов/сек, макс 300 шагов
+        step_delay = duration / steps
+        max_deviation = 5  # Максимально допустимое отклонение в пикселях
+
+        # Основной цикл перемещения с коррекцией
+        for step in range(1, steps + 1):
+            # Плавное движение с ускорением/замедлением
+            progress = step / steps
+            eased_progress = progress  # Можно изменить на ease-in/out функцию
+
+            # Целевые координаты на текущем шаге
+            new_x = self.__current_x + total_x * eased_progress
+            new_y = self.__current_y + total_y * eased_progress
+
+            # Относительное перемещение
+            rel_x = round(new_x - self.__current_x)
+            rel_y = round(new_y - self.__current_y)
 
             if rel_x != 0 or rel_y != 0:
-                if not self._send_command("mouse", "move", rel_x, rel_y):
+                # Отправляем команду перемещения
+                if not self._arduino._send_command("mouse", "move", rel_x, rel_y):
+                    self.__logger.error(f"Ошибка перемещения на шаге {step}")
                     return False
 
-                self.__current_x = new_x
-                self.__current_y = new_y
-                time.sleep(step_delay)
+                # Обновляем текущую позицию
+                self.__current_x += rel_x
+                self.__current_y += rel_y
+
+                # Проверка отклонения (дополнительная страховка)
+                expected_x = self.__current_x + total_x * eased_progress
+                expected_y = self.__current_y + total_y * eased_progress
+                deviation = ((self.__current_x - expected_x) ** 2 +
+                             (self.__current_y - expected_y) ** 2) ** 0.5
+
+                if deviation > max_deviation:
+                    self.__logger.warning(f"Коррекция отклонения: {deviation:.1f} пикселей")
+                    return self.move_absolute(target_x, target_y, duration / 2)
+
+            time.sleep(step_delay)
+
+        # Финальная коррекция
+        final_rel_x = target_x - self.__current_x
+        final_rel_y = target_y - self.__current_y
+        if final_rel_x != 0 or final_rel_y != 0:
+            success = self._arduino._send_command("mouse", "move", final_rel_x, final_rel_y)
+            if success:
+                self.__current_x = target_x
+                self.__current_y = target_y
+            return success
 
         return True
 
@@ -161,7 +192,7 @@ class MouseController(ArduinoController):
             self.__logger.warning("Попытка перемещения при неактивной эмуляции")
             return False
 
-        return self._send_command("mouse", "move", x, y)
+        return self._arduino._send_command("mouse", "move", x, y)
 
     def get_position(self) -> Tuple[int, int]:
         """Получить текущие виртуальные координаты курсора"""

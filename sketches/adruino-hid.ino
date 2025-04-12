@@ -43,7 +43,7 @@ void loop() {
 
 Device parseDevice(const String& deviceStr) {
     if (deviceStr == F("keyboard")) return DEVICE_KEYBOARD;
-    if (actionStr == F("press")) return DEVICE_MOUSE;
+    if (deviceStr == F("mouse")) return DEVICE_MOUSE;
     return DEVICE_UNKNOWN;
 }
 
@@ -195,7 +195,7 @@ bool handleKeyboard(ActionKeyboard action, const String& args) {
               Serial.println(F("Error: Missing keyboard text to print"));
               return false;
           }
-          Keyboard.print(args)
+          Keyboard.print(args);
           return true;
       }
       default:
@@ -244,7 +244,10 @@ String separateString(const String& data, char separator, int index, bool getRem
             }
             found++;
             strIndex[0] = strIndex[1] + 1;
-            strIndex[1] = (i == maxIndex) ? i + 1 : i;
+            strIndex[1] = i;
+            if (i == maxIndex && data.charAt(i) != separator) {
+                strIndex[1] = i + 1;
+            }
         }
     }
     return found > index ? data.substring(strIndex[0], strIndex[1]) : "";
