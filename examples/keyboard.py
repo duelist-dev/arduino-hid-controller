@@ -1,7 +1,6 @@
 from time import sleep
 
-from src.arduino_hid_controller import HIDController
-from src.arduino_hid_controller.constants import KEY_F12, KEY_LEFT_CTRL, KEY_LEFT_ALT, KEY_DELETE
+from src.arduino_hid_controller import HIDController, KeyboardKey
 
 with HIDController() as hid:
     print('Запуск эмуляции клавиатуры')
@@ -19,24 +18,24 @@ with HIDController() as hid:
     sleep(2)
 
     print('Вызов клавиши F12')
-    hid.keyboard.press(KEY_F12)
+    hid.keyboard.press(KeyboardKey.F12)
     sleep(0.15)
-    hid.keyboard.release(KEY_F12)
+    hid.keyboard.release(KeyboardKey.F12)
 
     print('Ожидание 2 секунды...')
     sleep(2)
 
     print('Вызов комбинации CTRL+ALT+DELETE')
-    hid.keyboard.press(KEY_LEFT_CTRL)
+    hid.keyboard.press(KeyboardKey.LEFT_CTRL)
     sleep(0.01)
-    hid.keyboard.press(KEY_LEFT_ALT)
+    hid.keyboard.press(KeyboardKey.LEFT_ALT)
     sleep(0.01)
-    hid.keyboard.press(KEY_DELETE)
+    hid.keyboard.press(KeyboardKey.DELETE)
     sleep(0.05)
     hid.keyboard.release_all()
 
     print('Вызов комбинации CTRL+ALT+DELETE через key combo')
-    hid.keyboard.key_combo([KEY_LEFT_CTRL, KEY_LEFT_ALT, KEY_DELETE])
+    hid.keyboard.key_combo([KeyboardKey.LEFT_CTRL, KeyboardKey.LEFT_ALT, KeyboardKey.DELETE])
 
     print('Ожидание 2 секунды...')
     sleep(2)

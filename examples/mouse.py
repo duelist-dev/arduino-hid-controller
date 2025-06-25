@@ -1,7 +1,6 @@
 from time import sleep
 
-from src.arduino_hid_controller import HIDController
-from src.arduino_hid_controller.constants import MOUSE_RIGHT, MOUSE_LEFT
+from src.arduino_hid_controller import HIDController, MouseButton
 
 with HIDController() as hid:
     print(f"Текущая позиция мыши: {hid.mouse.get_position()}")
@@ -15,12 +14,17 @@ with HIDController() as hid:
     print('Ожидание 2 секунды...')
     sleep(2)
 
-    # Square movement pattern
+    print('Клик левой кнопкой')
+    hid.mouse.click(MouseButton.LEFT)
+
+    print('Ожидание 2 секунды...')
+    sleep(2)
+
+    print('Переходы по координатам...')
     points = [(100, 100), (100, 200), (200, 200), (200, 100), (100, 100)]
     for x, y in points:
-        hid.mouse.move_absolute(x, y, duration=2)
+        hid.mouse.move_absolute(x, y, duration=4)
         sleep(1)
-        #hid.mouse.click(MOUSE_LEFT)
 
     print('Ожидание 2 секунды...')
     sleep(2)
